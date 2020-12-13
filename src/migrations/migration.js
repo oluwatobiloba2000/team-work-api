@@ -38,7 +38,7 @@ const createOrganizationMembersTableQuery = `
         email VARCHAR UNIQUE NOT NULL,
         organization_id UUID NOT NULL,
         isAdmin BOOLEAN DEFAULT false,
-        createdat TIMESTAMP DEFAULT NOW()
+        createdat TIMESTAMP DEFAULT NOW(),
         FOREIGN KEY (user_id) REFERENCES "users" (id) ON DELETE CASCADE,
         FOREIGN KEY (organization_id) REFERENCES "organization" (id) ON DELETE CASCADE
   )
@@ -60,7 +60,7 @@ const createPostTableQuery = `
         createdat TIMESTAMP DEFAULT NOW(),
         is_in_appropriate BOOLEAN DEFAULT false,
         FOREIGN KEY (user_id) REFERENCES "users" (id) ON DELETE CASCADE,
-        FOREIGN KEY (origanization_id) REFRENCES "organization" (id) ON DELETE CASCADE
+        FOREIGN KEY (origanization_id) REFERENCES "organization" (id) ON DELETE CASCADE
     )
 `;
 
@@ -75,7 +75,7 @@ const createCommentTableQuery = `
         createdat TIMESTAMP DEFAULT NOW(),
         is_in_appropriate BOOLEAN DEFAULT false,
         FOREIGN KEY (user_id) REFERENCES "users" (id) ON DELETE CASCADE,
-        FOREIGN KEY (post_id) REFRENCES "post" (id) ON DELETE CASCADE
+        FOREIGN KEY (post_id) REFERENCES "post" (id) ON DELETE CASCADE
     )
 `;
 

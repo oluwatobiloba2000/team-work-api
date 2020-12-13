@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && babel-node ./src/app.js",
     "start:dev": "nodemon --exec babel-node app.js",
-    "migrate": "babel-node ./migrations/index.js",
+    "migrate": "babel-node ./src/migrations/index.js",
     "build": "npm run clean && npm run build-babel",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s"
