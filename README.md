@@ -1,2 +1,2 @@
-# MyDiary
-<i>MyDiary is an online journal where users can pen down their thoughts and feelings.</i>
+# Team work
+<i>Teamwork is an internal social network for employees of an organization. The goal of this application is to facilitate more interaction between colleagues and promote team bonding.</i>
