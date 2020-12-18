@@ -26,10 +26,12 @@ class Authentication {
       firstname,
       lastname,
       email,
+      address,
+      gender,
     } = req.body;
 
     try {
-      if (!username || !password || !firstname || !lastname || !email) {
+      if (!username || !password || !firstname || !lastname || !email || !address || !gender) {
         return res.status(400).json({
           message: 'all fields required',
           code: 400,
@@ -65,7 +67,7 @@ class Authentication {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const insertedUser = await db.query('INSERT INTO users (username,firstname, lastname,email, password, has_joined, date_joined) VALUES($1, $2, $3, $4, $5, $6, NOW()) RETURNING *', [username, firstname, lastname, email, hashedPassword, true]);
+      const insertedUser = await db.query('INSERT INTO users (username,firstname, lastname,email, password, has_joined, date_joined, gender, address) VALUES($1, $2, $3, $4, $5, $6, NOW(), $7, $8) RETURNING *', [username, firstname, lastname, email, hashedPassword, true, gender, address]);
 
       return jwt.sign({
         username: insertedUser.rows[0].username,
