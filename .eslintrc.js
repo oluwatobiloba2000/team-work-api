@@ -7,7 +7,7 @@ module.exports = {
   ],
   rules: {
 	 'linebreak-style': 0,
-	  'max-len': ['error', 90, 2, {
+	  'max-len': ['error', 100, 2, {
       ignoreUrls: true,
       ignoreComments: false,
       ignoreRegExpLiterals: true,
