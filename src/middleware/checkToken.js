@@ -3,16 +3,16 @@ import jwt from 'jsonwebtoken';
 import httpResponse from '../helpers/http-response';
 
 const checkToken = (req, res, next) => {
+  const header = req.headers.authorization;
   try {
-    const header = req.headers.authorization;
     if (typeof header !== 'undefined') {
       const bearer = header.split(' ');
       const token = bearer[1] || req.token;
-      const decodedToken = jwt.verify(token, process.env.SECRET_JWT_KET);
+      const decodedToken = jwt.verify(token, process.env.SECRET_JWT_KEY);
       if (decodedToken) {
         req.user = decodedToken;
         req.token = token;
-        next();
+        return next();
       }
       return res.sendStatus(403).json({
         code: 403,
