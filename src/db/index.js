@@ -15,7 +15,9 @@ if (process.env.NODE_ENV === 'development') {
     database: process.env.DATABASE_NAME,
   });
 } else {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.NODE_ENV === 'test'
+    ? process.env.TEST_DATABASE_URL
+    : process.env.PRODUCTION_DATABASE_URL;
   pool = new Pool({
     connectionString,
   });
