@@ -69,6 +69,55 @@ class organizationController {
   }
 
   /**
+   *  @description   view all organization for a user
+   *  @param { object }
+   *
+   *  @returns { object } - org created
+   * */
+
+  static async FetchAllPublicOrgs(req, res) {
+    const { id, email } = req.user;
+    try {
+      if (!id || !email) return httpResponse.error(res, 400, 'all fields required', true);
+      const selectOrgQuery = 'SELECT *, (SELECT COUNT(*) FROM organizationMembers orgMembers WHERE org.id = orgMembers.organization_id) AS members_count FROM organization org WHERE isprivate = false ORDER BY org.createdat';
+      const allOpenOrg = await pool.query(selectOrgQuery);
+      if (allOpenOrg.rows[0]) {
+        return httpResponse.success(res, 200, 'all organizations', allOpenOrg.rows);
+      }
+      return httpResponse.success(res, 200, 'no public organization found');
+    } catch (error) {
+      return res.status(500).json({
+        message: ` Error from server ${error}`,
+      });
+    }
+  }
+
+  /**
+   *  @description   view all organization for a user
+   *  @param { object }
+   *
+   *  @returns { object } - org created
+   * */
+
+  static async orgDetails(req, res) {
+    const { id } = req.user;
+    const { orgId: organizationId } = req.params;
+
+    try {
+      if (!id) return httpResponse.error(res, 400, 'all fields required', true);
+      const orgDetails = await pool.query('SELECT *, (SELECT COUNT(*) FROM organizationMembers WHERE organization_id=$1 AND has_joined=true) AS org_members FROM organization WHERE id=$1', [organizationId]);
+      if (orgDetails.rows[0]) {
+        return httpResponse.success(res, 200, 'organization details', orgDetails.rows);
+      }
+      return httpResponse.success(res, 200, 'no org found');
+    } catch (error) {
+      return res.status(500).json({
+        message: ` Error from server ${error}`,
+      });
+    }
+  }
+
+  /**
    *  @description   assign a user as an admin
    *  @param { object }
    *
