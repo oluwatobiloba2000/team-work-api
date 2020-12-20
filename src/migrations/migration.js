@@ -88,7 +88,22 @@ const createCommentTableQuery = `
         createdat TIMESTAMP DEFAULT NOW(),
         is_in_appropriate BOOLEAN DEFAULT false,
         FOREIGN KEY (user_id) REFERENCES "users" (id) ON DELETE CASCADE,
-        FOREIGN KEY (post_id) REFERENCES "post" (id) ON DELETE CASCADE
+        FOREIGN KEY (post_id) REFERENCES "post" (id) ON DELETE CASCADE,
+        FOREIGN KEY (organization_id) REFERENCES "organization" (id) ON DELETE CASCADE
+    )
+`;
+
+const createSuperUserTableQuery = `
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE TABLE IF NOT EXISTS
+    superuser(
+        id UUID PRIMARY KEY NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+        username VARCHAR NOT NULL,
+        profile_img VARCHAR NULL,
+        header_img VARCHAR NULL,
+        email VARCHAR UNIQUE NOT NULL,
+        password VARCHAR NOT NULL,
+        createdat TIMESTAMP DEFAULT NOW()
     )
 `;
 
@@ -99,10 +114,19 @@ const migrate = async (db) => {
     await db.query(createOrganizationMembersTableQuery);
     await db.query(createPostTableQuery);
     await db.query(createCommentTableQuery);
+    await db.query(createSuperUserTableQuery);
     return true;
   } catch (error) {
     return console.log(error);
   }
 };
 
-export default migrate;
+export {
+  migrate,
+  createUserTableQuery,
+  createOrganizationTableQuery,
+  createOrganizationMembersTableQuery,
+  createPostTableQuery,
+  createCommentTableQuery,
+  createSuperUserTableQuery,
+};
