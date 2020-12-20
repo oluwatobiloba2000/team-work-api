@@ -7,5 +7,7 @@ const router = Router();
 
 router.get('/user', checkToken, Profile.View);
 router.put('/user/edit', checkToken, Profile.Update);
+router.put('/org/invite/:orgId/accept', checkToken, Profile.AcceptInviteToJoinOrg);
+router.post('/org/join/:orgId', checkToken, Profile.JoinOpenOrg);
 
 export default router;
