@@ -22,7 +22,7 @@ class Comment {
       const checkIfPostExist = await pool.query('SELECT * FROM post WHERE id=$1', [postId]);
       if (checkIfPostExist.rows[0]) {
         const commentCreated = await pool.query('INSERT INTO comment (comment, post_id, user_id) VALUES($1, $2, $3) RETURNING *', [comment, postId, userId]);
-        return httpResponse.success(res, 200, 'post created successfully', commentCreated.rows);
+        return httpResponse.success(res, 200, 'comment created successfully', commentCreated.rows);
       }
       return httpResponse.success(res, 200, 'no post found');
     } catch (error) {
@@ -83,6 +83,33 @@ class Comment {
         return httpResponse.success(res, 200, 'comments', { postOwnerComments: fetchPostOwnerComments.rows, comments: fetchComment.rows });
       }
       return httpResponse.success(res, 200, 'no post found');
+    } catch (error) {
+      return res.status(500).json({
+        message: ` Error from server ${error}`,
+      });
+    }
+  }
+
+  /**
+   *  @description   flas a comment as inappropriate
+   *  @param { object }
+   *
+   *  @returns { object } - flagged comment
+   * */
+  static async flagCommentAsInAppropriate(req, res) {
+    const { id: userId } = req.user;
+    const { commentId } = req.params;
+
+    try {
+      if (!userId || !commentId) {
+        return httpResponse.error(res, 400, 'all fields required', true);
+      }
+      const comment = await pool.query('SELECT * FROM comment WHERE id=$1 ', [commentId]);
+      if (comment.rows[0]) {
+        const commentFlagged = await pool.query('UPDATE comment SET is_in_appropriate=true WHERE id=$1 RETURNING *', [commentId]);
+        return httpResponse.success(res, 200, 'comment flagged successfully', commentFlagged.rows);
+      }
+      return httpResponse.success(res, 200, 'comment not found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
