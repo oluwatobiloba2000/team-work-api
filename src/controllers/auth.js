@@ -73,7 +73,7 @@ class Authentication {
         username: insertedUser.rows[0].username,
         email: insertedUser.rows[0].email,
         id: insertedUser.rows[0].id,
-      }, process.env.SECRET_JWT_KET, { expiresIn: '7d' }, async (err, token) => {
+      }, process.env.SECRET_JWT_KEY, { expiresIn: '7d' }, async (err, token) => {
         if (err) {
           return res.status(403).send(err);
         }
@@ -133,14 +133,14 @@ class Authentication {
             username: userExist.rows[0].username,
             email: userExist.rows[0].email,
             id: userExist.rows[0].id,
-          }, process.env.SECRET_JWT_KET, { expiresIn: '30d' }, async (err, token) => {
+          }, process.env.SECRET_JWT_KEY, { expiresIn: '30d' }, async (err, token) => {
             if (err) {
               return res.status(403).send(err);
             }
 
             // fetch all organizations the user belongs to
-            const userOrgQuery = 'SELECT * FROM organizationMembers WHERE user_id=$1 ORDER BY createdat';
-            const userOrgValue = [userExist.rows[0].id];
+            const userOrgQuery = 'SELECT * FROM organizationMembers WHERE email=$1 ORDER BY createdat';
+            const userOrgValue = [userExist.rows[0].email];
             const userOrg = await db.query(userOrgQuery, userOrgValue);
             return httpResponse.auth_success(res, 200, 'login success', token, userExist.rows[0], userOrg.rows.length !== 0 ? userOrg.rows : 'no org found');
           });
