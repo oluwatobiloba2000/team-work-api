@@ -76,8 +76,6 @@ class Comment {
       }
       const checkIfPostExist = await pool.query('SELECT * FROM post WHERE id=$1', [postId]);
       if (checkIfPostExist.rows[0]) {
-        // const fetchPostOwnerComments = await pool.query(`SELECT c.createdat, c.is_in_appropriate, c.id AS comment_id, c.comment, u.id AS user_id, u.username, u.profile_img, u.firstname, u.lastname
-        // FROM comment c INNER JOIN users u ON u.id = c.user_id WHERE c.post_id = $1 AND NOT (c.user_id = u.id) ORDER BY c.createdat`, [postId]);
         const fetchComment = await pool.query(`SELECT c.createdat, c.is_in_appropriate, c.id AS comment_id, c.comment, u.id AS user_id, u.username, u.profile_img, u.firstname, u.lastname
          FROM comment c INNER JOIN users u ON u.id = c.user_id WHERE c.post_id = $1 ORDER BY c.createdat ASC OFFSET($2) LIMIT($3)`, [postId, start, count]);
         return httpResponse.success(res, 200, 'comments', { comments: fetchComment.rows });
