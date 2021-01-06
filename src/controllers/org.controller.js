@@ -56,11 +56,11 @@ class organizationController {
       const selectOrgQuery = 'SELECT * FROM organizationMembers orgMembers INNER JOIN organization org ON orgMembers.organization_id = org.id WHERE user_id=$1 ORDER BY orgMembers.createdat';
       const selectOrgValue = [id];
       const allOrg = await pool.query(selectOrgQuery, selectOrgValue);
-      const pendingInvititationToOrg = await pool.query('SELECT * FROM organizationMembers WHERE email=$1 AND user_id=null', [email]);
+      const pendingInvititationToOrg = await pool.query('SELECT * FROM organizationMembers orgMembers INNER JOIN organization org ON orgMembers.organization_id = org.id WHERE email=$1 AND has_joined=false', [email]);
       if (allOrg.rows) {
-        return httpResponse.success(res, 200, 'all organizations', { all_active_organization: allOrg.rows, all_pending_org: pendingInvititationToOrg.rows.length !== 0 ? pendingInvititationToOrg.rows.length : 'no pending org' });
+        return httpResponse.success(res, 200, 'all organizations', { all_active_organization: allOrg.rows, all_pending_org: pendingInvititationToOrg.rows.length !== 0 ? pendingInvititationToOrg.rows : 'no pending org' });
       }
-      return httpResponse.success(res, 200, 'no org found');
+      return httpResponse.success(res, 404, 'no org found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -84,7 +84,7 @@ class organizationController {
       if (allOpenOrg.rows[0]) {
         return httpResponse.success(res, 200, 'all organizations', allOpenOrg.rows);
       }
-      return httpResponse.success(res, 200, 'no public organization found');
+      return httpResponse.success(res, 404, 'no public organization found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -105,11 +105,12 @@ class organizationController {
 
     try {
       if (!id) return httpResponse.error(res, 400, 'all fields required', true);
-      const orgDetails = await pool.query('SELECT *, (SELECT COUNT(*) FROM organizationMembers WHERE organization_id=$1 AND has_joined=true) AS org_members FROM organization WHERE id=$1', [organizationId]);
+      const orgDetails = await pool.query('SELECT *, (SELECT COUNT(*) FROM organizationMembers WHERE organization_id=$1 AND has_joined=true) AS org_members FROM organization org WHERE id=$1', [organizationId]);
+      const currentUserMemberDetails = await pool.query('SELECT * FROM organizationMembers WHERE organization_id=$1 AND user_id=$2', [organizationId, id]);
       if (orgDetails.rows[0]) {
-        return httpResponse.success(res, 200, 'organization details', orgDetails.rows);
+        return httpResponse.success(res, 200, 'organization details', { orgDetails: orgDetails.rows, currentUserMemberDetails : currentUserMemberDetails.rows });
       }
-      return httpResponse.success(res, 200, 'no org found');
+      return httpResponse.success(res, 404, 'no org found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -137,7 +138,7 @@ class organizationController {
           const assignUser = await pool.query('UPDATE organizationMembers SET isAdmin = true WHERE organization_id=$1 AND user_id=$2 RETURNING *', [orgId, userId]);
           return httpResponse.success(res, 200, 'user successfully assigned to an admin role', assignUser.rows[0]);
         }
-        return httpResponse.error(res, 400, 'user is not in this org', true);
+        return httpResponse.error(res, 404, 'user is not in this org', true);
       }
 
       return httpResponse.error(res, 400, 'only admins can perform this task', true);
@@ -168,7 +169,7 @@ class organizationController {
           const assignUser = await pool.query('UPDATE organizationMembers SET isAdmin = false WHERE organization_id=$1 AND user_id=$2 RETURNING *', [orgId, userId]);
           return httpResponse.success(res, 200, 'user successfully dismissed from an admin role', assignUser.rows[0]);
         }
-        return httpResponse.error(res, 400, 'user is not in this org', true);
+        return httpResponse.error(res, 404, 'user is not in this org', true);
       }
 
       return httpResponse.error(res, 400, 'only organization owners can perform this task', true);
@@ -198,7 +199,7 @@ class organizationController {
           const changeOrgPrivacy = await pool.query('UPDATE organization SET isPrivate = $1 WHERE id=$2 RETURNING *', [!checkIfOrgExist.rows[0].isprivate, orgId]);
           return httpResponse.success(res, 200, 'org privacy changed', changeOrgPrivacy.rows[0]);
         }
-        return httpResponse.error(res, 400, 'org does not exist', true);
+        return httpResponse.error(res, 404, 'org does not exist', true);
       }
 
       return httpResponse.error(res, 400, 'only organization owners can perform this task', true);
