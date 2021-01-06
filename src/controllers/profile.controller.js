@@ -84,7 +84,7 @@ class ProfileController {
       if (checkIfUserExist.rows[0]) {
         const checkIfUserIsAmember = await pool.query('SELECT * FROM organizationMembers WHERE email=$1 AND invite_key=$2 AND organization_id=$3', [email, invitekey, organizationId]);
         if (checkIfUserIsAmember.rows[0] && checkIfUserIsAmember.rows[0].has_joined === false && checkIfUserIsAmember.rows[0].email === email) {
-          const insertUserToOrg = await pool.query('INSERT INTO organizationMembers (email, user_id, has_joined, organization_id, jobRole, department) VALUES($1, $2, $3, $4) RETURNING *', [email, userId, true, organizationId, jobRole, department]);
+          const insertUserToOrg = await pool.query('UPDATE organizationMembers set email=$1, user_id=$2, has_joined=$3, organization_id=$4, jobRole=$5, department=$6 WHERE email=$7 AND invite_key=$8 AND organization_id=$9  RETURNING *', [email, userId, true, organizationId, jobRole, department, email, invitekey, organizationId]);
           if (insertUserToOrg.rows[0]) {
             return httpResponse.success(res, 200, 'user Joined successfully', insertUserToOrg.rows[0]);
           }
