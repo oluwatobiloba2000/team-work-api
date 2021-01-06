@@ -24,7 +24,7 @@ class Comment {
         const commentCreated = await pool.query('INSERT INTO comment (comment, post_id, user_id) VALUES($1, $2, $3) RETURNING *', [comment, postId, userId]);
         return httpResponse.success(res, 200, 'comment created successfully', commentCreated.rows);
       }
-      return httpResponse.success(res, 200, 'no post found');
+      return httpResponse.success(res, 404, 'no post found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -50,7 +50,7 @@ class Comment {
         await pool.query('DELETE FROM comment WHERE id=$1', [commentId]);
         return httpResponse.success(res, 200, 'comment deleted successfully', null);
       }
-      return httpResponse.success(res, 200, 'comment not found');
+      return httpResponse.success(res, 404, 'comment not found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -76,13 +76,13 @@ class Comment {
       }
       const checkIfPostExist = await pool.query('SELECT * FROM post WHERE id=$1', [postId]);
       if (checkIfPostExist.rows[0]) {
-        const fetchPostOwnerComments = await pool.query(`SELECT c.createdat, c.is_in_appropriate, c.id AS comment_id, c.comment, u.id AS user_id, u.username, u.profile_img, u.firstname, u.lastname
-        FROM comment c INNER JOIN users u ON u.id = c.user_id WHERE c.post_id = $1 AND c.user_id = $2  ORDER BY c.createdat`, [postId, userId]);
+        // const fetchPostOwnerComments = await pool.query(`SELECT c.createdat, c.is_in_appropriate, c.id AS comment_id, c.comment, u.id AS user_id, u.username, u.profile_img, u.firstname, u.lastname
+        // FROM comment c INNER JOIN users u ON u.id = c.user_id WHERE c.post_id = $1 AND NOT (c.user_id = u.id) ORDER BY c.createdat`, [postId]);
         const fetchComment = await pool.query(`SELECT c.createdat, c.is_in_appropriate, c.id AS comment_id, c.comment, u.id AS user_id, u.username, u.profile_img, u.firstname, u.lastname
-         FROM comment c INNER JOIN users u ON u.id = c.user_id WHERE c.post_id = $1 AND NOT (c.user_id = u.id) ORDER BY c.createdat DESC OFFSET($2) LIMIT($3)`, [postId, start, count]);
-        return httpResponse.success(res, 200, 'comments', { postOwnerComments: fetchPostOwnerComments.rows, comments: fetchComment.rows });
+         FROM comment c INNER JOIN users u ON u.id = c.user_id WHERE c.post_id = $1 ORDER BY c.createdat ASC OFFSET($2) LIMIT($3)`, [postId, start, count]);
+        return httpResponse.success(res, 200, 'comments', { comments: fetchComment.rows });
       }
-      return httpResponse.success(res, 200, 'no post found');
+      return httpResponse.success(res, 404, 'no post found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -109,7 +109,7 @@ class Comment {
         const commentFlagged = await pool.query('UPDATE comment SET is_in_appropriate=true WHERE id=$1 RETURNING *', [commentId]);
         return httpResponse.success(res, 200, 'comment flagged successfully', commentFlagged.rows);
       }
-      return httpResponse.success(res, 200, 'comment not found');
+      return httpResponse.success(res, 404, 'comment not found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
