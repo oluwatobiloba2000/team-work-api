@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 import dotenv from 'dotenv';
-import cloudinary from 'cloudinary';
 import pool from '../db/index';
 import httpResponse from '../helpers/http-response';
 
