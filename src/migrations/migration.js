@@ -103,7 +103,7 @@ const createSuperUserTableQuery = `
         header_img VARCHAR NULL,
         email VARCHAR UNIQUE NOT NULL,
         password VARCHAR NOT NULL,
-        createdat TIMESTAMP DEFAULT NOW()
+        createdat TIMESTAMP DEFAULT NOW() ,
     )
 `;
 

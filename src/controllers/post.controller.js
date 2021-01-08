@@ -21,14 +21,16 @@ class Post {
       if (!userId || !(article || gif) || !organizationId || !privacy) {
         return httpResponse.error(res, 400, 'all fields required', true);
       }
+      // upload gif
       const checkIfOrgExist = await pool.query('SELECT * FROM organization WHERE id=$1', [organizationId]);
       if (checkIfOrgExist.rows[0]) {
         const checkIfUserIsAmember = await pool.query('SELECT * FROM organizationMembers WHERE user_id=$1 AND organization_id=$2', [userId, organizationId]);
         if (checkIfUserIsAmember.rows[0]) {
           const postCreated = await pool.query('INSERT INTO post (article, gif, user_id, organization_id, privacy) VALUES($1, $2, $3, $4, $5) RETURNING *', [article, gif, userId, organizationId, privacy]);
-          return httpResponse.success(res, 200, 'post created successfully', postCreated.rows);
+          const fetchPoster = await pool.query('SELECT username, firstname, lastname, profile_img FROM users WHERE id=$1', [userId]);
+          return httpResponse.success(res, 200, 'post created successfully', { ...postCreated.rows[0], ...fetchPoster.rows[0] });
         }
-        return httpResponse.success(res, 200, 'user not found');
+        return httpResponse.success(res, 404, 'user not found');
       }
       return httpResponse.success(res, 200, 'no org found');
     } catch (error) {
@@ -161,7 +163,7 @@ class Post {
           return httpResponse.success(res, 200, `all posts with tag ${tag}`, fetchPosts.rows);
         }
       }
-      return httpResponse.success(res, 200, 'no org found');
+      return httpResponse.success(res, 404, 'no org found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,
@@ -183,7 +185,7 @@ class Post {
       if (!userId || !postId) {
         return httpResponse.error(res, 400, 'all fields required', true);
       }
-      const checkIfPostExist = await pool.query('SELECT * FROM post WHERE id=$1', [postId]);
+      const checkIfPostExist = await pool.query('SELECT *, u.firstname, u.lastname FROM post p INNER JOIN users u ON p.user_id = u.id WHERE p.id=$1', [postId]);
       if (checkIfPostExist.rows[0]) {
         const commentCount = await pool.query('SELECT count(*) FROM comment c WHERE post_id = $1 ', [postId]);
         return httpResponse.success(res, 200, 'post', { post: checkIfPostExist.rows, comentCount: commentCount.rows[0] });
@@ -215,7 +217,7 @@ class Post {
         const postFlagged = await pool.query('UPDATE post SET is_in_appropriate=true WHERE id=$1 RETURNING *', [postId]);
         return httpResponse.success(res, 200, 'post flagged successfully', postFlagged.rows);
       }
-      return httpResponse.success(res, 200, 'post not found');
+      return httpResponse.success(res, 404, 'post not found');
     } catch (error) {
       return res.status(500).json({
         message: ` Error from server ${error}`,

@@ -8,7 +8,7 @@ import 'dotenv/config';
  *
  ********** */
 
-class Upload {
+class UploadGif {
   /**
    *  @static
    *
@@ -17,19 +17,19 @@ class Upload {
    * @returns {object} - status, data, size
    *
    *
-   * @description This method is used to upload a picture to cloudinary
+   * @description This method is used to upload a gif to cloudinary
    * @memberOf Upload
    * */
 
-  static async upLoadphoto(req, res) {
-    const { image } = req.files;
+  static async upLoad(req, res) {
+    const { gif } = req.files;
 
-    if (!image) {
-      return res.status(400).json({ message: 'image file needed' });
+    if (!gif) {
+      return res.status(400).json({ message: 'gif file needed' });
     }
     try {
       return cloudinary.v2.uploader
-        .upload(image.tempFilePath, { resourse_type: 'auto' })
+        .upload(gif.tempFilePath, { resourse_type: 'auto' })
         .then(async (result) => {
           if (!result) return res.status(400).json({ message: 'upload error' });
           // image response
@@ -38,9 +38,11 @@ class Upload {
             data: result,
           });
         })
-        .catch((err) => res.status(500).json({
-          message: ` Error from server ${err}`,
-        }));
+        .catch((e) => {
+          res.status(500).json({
+            message: e.message,
+          });
+        });
     } catch (err) {
       return res.status(500).json({
         message: ' Error from server',
@@ -49,4 +51,4 @@ class Upload {
   }
 }
 
-export default Upload;
+export default UploadGif;
