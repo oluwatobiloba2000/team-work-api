@@ -24,6 +24,7 @@
     "@babel/preset-env": "^7.12.1",
     "@babel/register": "^7.12.1",
     "@babel/runtime": "^7.12.5",
+    "@sendgrid/mail": "^7.4.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cloudinary": "^1.23.0",
