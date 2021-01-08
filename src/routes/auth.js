@@ -4,7 +4,8 @@ import Authentication from '../controllers/auth';
 
 const router = Router();
 
-router.post('/login', Authentication.login);
 router.post('/signup', Authentication.signup);
+
+router.post('/login', Authentication.login);
 
 export default router;
