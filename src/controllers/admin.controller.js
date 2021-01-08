@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import randomString from 'randomstring';
 import pool from '../db/index';
 import httpResponse from '../helpers/http-response';
+import EmailSender from '../services/emailSender';
 
 dotenv.config();
 class Admin {
@@ -160,14 +161,18 @@ class Admin {
         return httpResponse.error(res, 400, 'all fields required', true);
       }
       const checkIfUserIsAmemberAndAdmin = await pool.query('SELECT * FROM organizationMembers WHERE user_id=$1 AND organization_id=$2', [userId, organizationId]);
+
       if (checkIfUserIsAmemberAndAdmin.rows[0] && (checkIfUserIsAmemberAndAdmin.rows[0].organization_id === organizationId && checkIfUserIsAmemberAndAdmin.rows[0].isadmin)) {
         const checkIfUserIsAmember = await pool.query('SELECT * FROM organizationMembers WHERE email=$1 AND organization_id=$2', [email, organizationId]);
+        const OrgDetails = await pool.query('SELECT * FROM organization WHERE id=$1', [organizationId]);
+
         if (!checkIfUserIsAmember.rows[0]) {
           const insertUserToOrg = await pool.query('INSERT INTO organizationMembers (invite_key, email, organization_id) VALUES($1, $2, $3) RETURNING *', [inviteKey, email, organizationId]);
           if (insertUserToOrg.rows[0]) {
-            return httpResponse.success(res, 200, 'user Invited successfully', insertUserToOrg.rows[0]);
+            EmailSender.sendInviteMails(email, organizationId, OrgDetails.rows[0].name, insertUserToOrg.rows[0].invite_key);
+            return httpResponse.success(res, 200, 'user Invited successfully', { invitedUser: insertUserToOrg.rows[0], inviteLink: `/accept/invite?email=${email}&organizationID=${insertUserToOrg.rows[0].organization_id}&org=${OrgDetails.rows[0].name}&inviteKey=${insertUserToOrg.rows[0].invite_key}` });
           }
-          return httpResponse.error(res, 500, 'task failed', true);
+          return httpResponse.error(res, 400, 'task failed', true);
         }
         return httpResponse.error(res, 400, 'user is already in the organization', true);
       }
